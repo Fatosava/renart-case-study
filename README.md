@@ -1,1 +1,0 @@
-# renart-case-study

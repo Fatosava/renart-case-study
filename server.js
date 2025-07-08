@@ -25,29 +25,28 @@ async function getGoldPrice() {
 // Ürün verilerini products.json dosyasından okuma kısmım
 const products = JSON.parse(fs.readFileSync('./products.json'));
 
-//Enpoint kısmım
 app.get("/products", async (req, res) => {
-  const goldPrice = await getGoldPrice();
+  const goldPrice = await getGoldPrice();           // 403 olursa fallback 60
 
-  
+  // ➊ Ürünleri zenginleştir – data ismini kullan
   let data = products.map(p => {
     const priceValue = (p.popularityScore + 1) * p.weight * goldPrice;
     return {
       ...p,
-      priceValue,                
-      price: priceValue.toFixed(2) + " USD" 
+      priceValue,                         // sayısal
+      price: priceValue.toFixed(2) + " USD"
     };
   });
 
-
+  // ➋ Query filtreleri
   const { minPrice, maxPrice } = req.query;
   if (minPrice) data = data.filter(p => p.priceValue >= Number(minPrice));
   if (maxPrice) data = data.filter(p => p.priceValue <= Number(maxPrice));
 
-  
-
-  res.json(enrichedProducts);
+  // ➌ Cevap
+  res.json(data);
 });
+
 
 app.listen(port, () => {
   console.log(`API listening at http://localhost:${port}`);

@@ -26,18 +26,25 @@ async function getGoldPrice() {
 const products = JSON.parse(fs.readFileSync('./products.json'));
 
 //Enpoint kısmım
-app.get('/products', async (req, res) => {
+app.get("/products", async (req, res) => {
   const goldPrice = await getGoldPrice();
 
-
   
-  const enrichedProducts = products.map(product => {
-    const price = (product.popularityScore + 1) * product.weight * goldPrice;
+  let data = products.map(p => {
+    const priceValue = (p.popularityScore + 1) * p.weight * goldPrice;
     return {
-      ...product,
-      price: price.toFixed(2) + ' USD',
+      ...p,
+      priceValue,                
+      price: priceValue.toFixed(2) + " USD" 
     };
   });
+
+
+  const { minPrice, maxPrice } = req.query;
+  if (minPrice) data = data.filter(p => p.priceValue >= Number(minPrice));
+  if (maxPrice) data = data.filter(p => p.priceValue <= Number(maxPrice));
+
+  
 
   res.json(enrichedProducts);
 });
